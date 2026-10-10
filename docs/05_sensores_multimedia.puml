@@ -1,0 +1,131 @@
+@startuml
+title Sensores y multimedia - Interfaces y polimorfismo
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam nodesep 60
+skinparam ranksep 80
+skinparam classFontSize 14
+skinparam ArrowFontSize 12
+hide empty members
+
+abstract class Dispositivo {
+  # id: Long
+  # codigo: String
+  # claveApiHash: String
+  # ultimoLatido: LocalDateTime
+  # activo: boolean
+  {abstract} + getTipo(): String
+  + validarClave(clave: String): boolean
+  + registrarLatido(): void
+  + estaEnLinea(): boolean
+}
+
+class SensorArco {
+  - ubicacion: UbicacionSensor
+  - sensibilidad: int
+  + emitirSenal(): LocalDateTime
+  + getTipo(): String
+}
+
+class CamaraCancha {
+  - urlStream: String
+  - resolucion: String
+  - fps: int
+  + iniciarGrabacion(p: Partido): Grabacion
+  + getTipo(): String
+}
+
+class Grabacion {
+  - id: Long
+  - urlBase: String
+  - inicio: LocalDateTime
+  - fin: LocalDateTime
+  - estado: EstadoGrabacion
+  + finalizar(): void
+  + contieneInstante(t: LocalDateTime): boolean
+}
+
+class Clip {
+  - id: Long
+  - urlVideo: String
+  - urlMiniatura: String
+  - segundosAntes: int
+  - segundosDespues: int
+  - duracionSegundos: int
+  - estado: EstadoClip
+  - visible: boolean
+  - vistas: int
+  + calcularRango(): Intervalo
+  + marcarListo(url: String, miniatura: String): void
+  + marcarError(motivo: String): void
+  + descartar(): void
+  + incrementarVistas(): void
+}
+
+interface IDetectorGol {
+  + detectar(): List<Gol>
+}
+
+class DetectorPorSensor {
+  + detectar(): List<Gol>
+}
+
+class DetectorPorYolo {
+  - modelo: String
+  - umbralConfianza: double
+  + detectar(): List<Gol>
+}
+
+interface IGeneradorClip {
+  + generar(g: Grabacion, instante: LocalDateTime, antes: int, despues: int): Clip
+}
+
+class GeneradorClipFFmpeg {
+  - rutaFFmpeg: String
+  + generar(g: Grabacion, instante: LocalDateTime, antes: int, despues: int): Clip
+}
+
+interface IAlmacenamiento {
+  + subir(archivo: File): String
+  + generarUrlFirmada(ruta: String): String
+  + eliminar(ruta: String): void
+}
+
+class AlmacenamientoS3 {
+  - bucket: String
+  + subir(archivo: File): String
+  + generarUrlFirmada(ruta: String): String
+  + eliminar(ruta: String): void
+}
+
+class AlmacenamientoLocal {
+  - directorio: String
+  + subir(archivo: File): String
+  + generarUrlFirmada(ruta: String): String
+  + eliminar(ruta: String): void
+}
+
+class Cancha <<ver Canchas>>
+class Partido <<ver Partidos>>
+class Gol <<ver Partidos>>
+
+Cancha "1" *-- "0..*" Dispositivo : instala >
+Dispositivo <|-- SensorArco
+Dispositivo <|-- CamaraCancha
+CamaraCancha "1" -- "0..*" Grabacion : produce >
+Partido "1" *-- "0..*" Grabacion
+Partido "1" *-- "0..*" Clip
+Clip "0..*" --> "1" Grabacion : se corta de >
+Gol "1" -- "0..1" Clip : genera >
+
+IDetectorGol <|.. DetectorPorSensor
+IDetectorGol <|.. DetectorPorYolo
+DetectorPorSensor ..> SensorArco : escucha
+IDetectorGol ..> Gol : produce
+
+IGeneradorClip <|.. GeneradorClipFFmpeg
+GeneradorClipFFmpeg ..> Clip : crea
+GeneradorClipFFmpeg ..> IAlmacenamiento : sube con
+IAlmacenamiento <|.. AlmacenamientoS3
+IAlmacenamiento <|.. AlmacenamientoLocal
+@enduml

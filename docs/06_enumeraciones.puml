@@ -1,0 +1,80 @@
+@startuml
+title Enumeraciones del sistema
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam nodesep 60
+skinparam ranksep 80
+skinparam classFontSize 14
+skinparam ArrowFontSize 12
+hide empty members
+skinparam nodesep 40
+skinparam ranksep 40
+
+enum TipoDeporte {
+  FUTBOL
+  BASQUET
+  VOLEY
+  PADEL
+}
+enum FormatoFutbol {
+  FUTBOL_5
+  FUTBOL_7
+  FUTBOL_11
+}
+enum TipoSuperficie {
+  CESPED_SINTETICO
+  CESPED_NATURAL
+  LOSA
+  PARQUET
+  ARCILLA
+}
+enum EstadoReserva {
+  PENDIENTE
+  CONFIRMADA
+  CANCELADA
+  COMPLETADA
+  NO_SHOW
+}
+enum EstadoPago {
+  PENDIENTE
+  PAGADO
+  FALLIDO
+  REEMBOLSADO
+}
+enum EstadoPartido {
+  PROGRAMADO
+  EN_JUEGO
+  FINALIZADO
+  CANCELADO
+}
+enum LadoEquipo {
+  A
+  B
+}
+enum EstadoEvento {
+  PENDIENTE_ATRIBUCION
+  CONFIRMADO
+  DESCARTADO
+}
+enum OrigenEvento {
+  SENSOR
+  YOLO
+  MANUAL
+}
+enum UbicacionSensor {
+  ARCO_A
+  ARCO_B
+}
+enum EstadoGrabacion {
+  GRABANDO
+  FINALIZADA
+  ERROR
+}
+enum EstadoClip {
+  PENDIENTE
+  PROCESANDO
+  LISTO
+  ERROR
+  DESCARTADO
+}
+@enduml

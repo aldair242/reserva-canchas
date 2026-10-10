@@ -1,0 +1,109 @@
+@startuml
+title Sedes, canchas y tarifas - Herencia y patrón Strategy
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam nodesep 60
+skinparam ranksep 80
+skinparam classFontSize 14
+skinparam ArrowFontSize 12
+hide empty members
+
+class Sede {
+  - id: Long
+  - nombre: String
+  - direccion: String
+  - distrito: String
+  - latitud: Double
+  - longitud: Double
+  - horaApertura: LocalTime
+  - horaCierre: LocalTime
+  - activa: boolean
+  + agregarCancha(c: Cancha): void
+  + estaAbiertaEn(hora: LocalTime): boolean
+}
+
+abstract class Cancha {
+  # id: Long
+  # nombre: String
+  # superficie: TipoSuperficie
+  # techada: boolean
+  # iluminacion: boolean
+  # activa: boolean
+  - tarifa: EstrategiaTarifa
+  {abstract} + getDeporte(): TipoDeporte
+  {abstract} + getCapacidadJugadores(): int
+  + calcularPrecio(f: LocalDate, ini: LocalTime, fin: LocalTime): BigDecimal
+  + estaDisponible(f: LocalDate, ini: LocalTime, fin: LocalTime): boolean
+  + bloquear(b: BloqueoCancha): void
+}
+
+class CanchaFutbol {
+  - formato: FormatoFutbol
+  + getDeporte(): TipoDeporte
+  + getCapacidadJugadores(): int
+}
+
+class CanchaBasquet {
+  - medioCampo: boolean
+  + getDeporte(): TipoDeporte
+  + getCapacidadJugadores(): int
+}
+
+class CanchaVoley {
+  - alturaRed: double
+  - esDePlaya: boolean
+  + getDeporte(): TipoDeporte
+  + getCapacidadJugadores(): int
+}
+
+class CanchaPadel {
+  - paredesDeVidrio: boolean
+  + getDeporte(): TipoDeporte
+  + getCapacidadJugadores(): int
+}
+
+interface EstrategiaTarifa {
+  + calcular(c: Cancha, f: LocalDate, ini: LocalTime, fin: LocalTime): BigDecimal
+}
+
+class TarifaEstandar {
+  - precioHora: BigDecimal
+  + calcular(c: Cancha, f: LocalDate, ini: LocalTime, fin: LocalTime): BigDecimal
+}
+
+class TarifaHoraPico {
+  - precioNormal: BigDecimal
+  - precioPico: BigDecimal
+  - inicioPico: LocalTime
+  - finPico: LocalTime
+  + calcular(c: Cancha, f: LocalDate, ini: LocalTime, fin: LocalTime): BigDecimal
+}
+
+class TarifaPromocional {
+  - base: EstrategiaTarifa
+  - porcentajeDescuento: double
+  - vigenteDesde: LocalDate
+  - vigenteHasta: LocalDate
+  + calcular(c: Cancha, f: LocalDate, ini: LocalTime, fin: LocalTime): BigDecimal
+}
+
+class BloqueoCancha {
+  - id: Long
+  - inicio: LocalDateTime
+  - fin: LocalDateTime
+  - motivo: String
+  + seSolapaCon(ini: LocalDateTime, fin: LocalDateTime): boolean
+}
+
+Sede "1" *-- "1..*" Cancha : tiene >
+Cancha <|-- CanchaFutbol
+Cancha <|-- CanchaBasquet
+Cancha <|-- CanchaVoley
+Cancha <|-- CanchaPadel
+Cancha "1" o-- "1" EstrategiaTarifa : usa >
+EstrategiaTarifa <|.. TarifaEstandar
+EstrategiaTarifa <|.. TarifaHoraPico
+EstrategiaTarifa <|.. TarifaPromocional
+TarifaPromocional o-- EstrategiaTarifa : decora >
+Cancha "1" *-- "0..*" BloqueoCancha : bloqueos >
+@enduml

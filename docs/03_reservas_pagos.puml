@@ -1,0 +1,76 @@
+@startuml
+title Reservas y pagos - Clase abstracta y polimorfismo
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam nodesep 60
+skinparam ranksep 80
+skinparam classFontSize 14
+skinparam ArrowFontSize 12
+hide empty members
+
+class Reserva {
+  - id: Long
+  - codigo: String
+  - fecha: LocalDate
+  - horaInicio: LocalTime
+  - horaFin: LocalTime
+  - estado: EstadoReserva
+  - precioTotal: BigDecimal
+  - version: Long
+  + confirmar(): void
+  + cancelar(motivo: String): void
+  + reprogramar(f: LocalDate, ini: LocalTime, fin: LocalTime): void
+  + calcularMonto(): BigDecimal
+  + puedeCancelarse(): boolean
+  + estaPagada(): boolean
+  + agregarPago(p: Pago): void
+}
+
+abstract class Pago {
+  # id: Long
+  # monto: BigDecimal
+  # estado: EstadoPago
+  # fechaPago: LocalDateTime
+  # referencia: String
+  {abstract} + procesar(): boolean
+  + confirmar(): void
+  + marcarFallido(): void
+  + reembolsar(): void
+}
+
+class PagoTarjeta {
+  - ultimosCuatro: String
+  - marca: String
+  + procesar(): boolean
+}
+
+class PagoBilletera {
+  - proveedor: String
+  - numeroOperacion: String
+  + procesar(): boolean
+}
+
+class PagoTransferencia {
+  - banco: String
+  - codigoOperacion: String
+  + procesar(): boolean
+}
+
+class PagoEfectivo {
+  - recibidoPor: String
+  + procesar(): boolean
+}
+
+class Jugador <<ver Personas>>
+class Cancha <<ver Canchas>>
+class Partido <<ver Partidos>>
+
+Jugador "1" -- "0..*" Reserva : organiza >
+Cancha "1" -- "0..*" Reserva : se reserva >
+Reserva "1" *-- "0..*" Pago : se paga con >
+Reserva "1" -- "0..1" Partido : genera >
+Pago <|-- PagoTarjeta
+Pago <|-- PagoBilletera
+Pago <|-- PagoTransferencia
+Pago <|-- PagoEfectivo
+@enduml

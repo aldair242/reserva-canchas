@@ -1,0 +1,140 @@
+@startuml
+title Diagrama de clases general - Reserva de Canchas con Estadísticas y Highlights
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam nodesep 60
+skinparam ranksep 80
+skinparam classFontSize 14
+skinparam ArrowFontSize 12
+hide empty members
+hide members
+
+package "Personas" {
+  abstract class Persona
+  interface IAutenticable
+  class Usuario
+  class Jugador
+  class AdministradorSede
+  class Administrador
+  class Invitado
+}
+
+package "Canchas y tarifas" {
+  class Sede
+  abstract class Cancha
+  class CanchaFutbol
+  class CanchaBasquet
+  class CanchaVoley
+  class CanchaPadel
+  interface EstrategiaTarifa
+  class TarifaEstandar
+  class TarifaHoraPico
+  class TarifaPromocional
+  class BloqueoCancha
+}
+
+package "Reservas y pagos" {
+  class Reserva
+  abstract class Pago
+  class PagoTarjeta
+  class PagoBilletera
+  class PagoTransferencia
+  class PagoEfectivo
+}
+
+package "Partidos y estadísticas" {
+  class Partido
+  class ParticipantePartido
+  abstract class EventoPartido
+  class Gol
+  class GolEnContra
+  abstract class Tarjeta
+  class TarjetaAmarilla
+  class TarjetaRoja
+  interface IDescartable
+  class EstadisticaJugador
+}
+
+package "Sensores y multimedia" {
+  abstract class Dispositivo
+  class SensorArco
+  class CamaraCancha
+  class Grabacion
+  class Clip
+  interface IDetectorGol
+  class DetectorPorSensor
+  class DetectorPorYolo
+  interface IGeneradorClip
+  class GeneradorClipFFmpeg
+  interface IAlmacenamiento
+  class AlmacenamientoS3
+  class AlmacenamientoLocal
+}
+
+' ---------- Herencia ----------
+Persona <|-- Usuario
+Persona <|-- Invitado
+Usuario <|-- Jugador
+Usuario <|-- AdministradorSede
+Usuario <|-- Administrador
+IAutenticable <|.. Usuario
+
+Cancha <|-- CanchaFutbol
+Cancha <|-- CanchaBasquet
+Cancha <|-- CanchaVoley
+Cancha <|-- CanchaPadel
+EstrategiaTarifa <|.. TarifaEstandar
+EstrategiaTarifa <|.. TarifaHoraPico
+EstrategiaTarifa <|.. TarifaPromocional
+
+Pago <|-- PagoTarjeta
+Pago <|-- PagoBilletera
+Pago <|-- PagoTransferencia
+Pago <|-- PagoEfectivo
+
+EventoPartido <|-- Gol
+EventoPartido <|-- GolEnContra
+EventoPartido <|-- Tarjeta
+Tarjeta <|-- TarjetaAmarilla
+Tarjeta <|-- TarjetaRoja
+IDescartable <|.. EventoPartido
+IDescartable <|.. Clip
+
+Dispositivo <|-- SensorArco
+Dispositivo <|-- CamaraCancha
+IDetectorGol <|.. DetectorPorSensor
+IDetectorGol <|.. DetectorPorYolo
+IGeneradorClip <|.. GeneradorClipFFmpeg
+IAlmacenamiento <|.. AlmacenamientoS3
+IAlmacenamiento <|.. AlmacenamientoLocal
+
+' ---------- Asociaciones ----------
+AdministradorSede "1" -- "0..*" Sede : administra
+Sede "1" *-- "1..*" Cancha : tiene
+Cancha "1" o-- "1" EstrategiaTarifa : usa
+TarifaPromocional o-- EstrategiaTarifa : decora
+Cancha "1" *-- "0..*" BloqueoCancha
+Cancha "1" *-- "0..*" Dispositivo
+
+Jugador "1" -- "0..*" Reserva : organiza
+Cancha "1" -- "0..*" Reserva
+Reserva "1" *-- "0..*" Pago
+Reserva "1" -- "0..1" Partido : genera
+
+Partido "1" *-- "2..*" ParticipantePartido
+ParticipantePartido "0..*" --> "1" Persona
+Partido "1" *-- "0..*" EventoPartido
+Gol "0..*" --> "0..1" ParticipantePartido : anotador
+Jugador "1" -- "1" EstadisticaJugador
+
+CamaraCancha "1" -- "0..*" Grabacion
+Partido "1" *-- "0..*" Grabacion
+Partido "1" *-- "0..*" Clip
+Gol "1" -- "0..1" Clip : genera
+Clip "0..*" --> "1" Grabacion : se corta de
+
+IDetectorGol ..> Gol : produce
+DetectorPorSensor ..> SensorArco : escucha
+GeneradorClipFFmpeg ..> Clip : crea
+GeneradorClipFFmpeg ..> IAlmacenamiento : sube con
+@enduml

@@ -1,0 +1,84 @@
+@startuml
+title Personas - Herencia y polimorfismo
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam nodesep 60
+skinparam ranksep 80
+skinparam classFontSize 14
+skinparam ArrowFontSize 12
+hide empty members
+
+abstract class Persona {
+  # id: Long
+  # nombre: String
+  # apellido: String
+  # telefono: String
+  + getNombreCompleto(): String
+  {abstract} + getNombreVisible(): String
+}
+
+interface IAutenticable {
+  + autenticar(password: String): boolean
+  + cambiarPassword(actual: String, nueva: String): void
+}
+
+class Usuario {
+  - correo: String
+  - passwordHash: String
+  - fechaRegistro: LocalDateTime
+  - activo: boolean
+  + autenticar(password: String): boolean
+  + cambiarPassword(actual: String, nueva: String): void
+  + desactivar(): void
+  + getNombreVisible(): String
+}
+
+class Jugador {
+  - apodo: String
+  - fotoUrl: String
+  - posicionPreferida: String
+  + reservar(c: Cancha, f: LocalDate, ini: LocalTime, fin: LocalTime): Reserva
+  + obtenerEstadisticas(): EstadisticaJugador
+  + getNombreVisible(): String
+}
+
+class AdministradorSede {
+  - sedes: List<Sede>
+  + registrarCancha(s: Sede, c: Cancha): void
+  + bloquearCancha(c: Cancha, b: BloqueoCancha): void
+  + consultarReservas(s: Sede, f: LocalDate): List<Reserva>
+}
+
+class Administrador {
+  + crearSede(s: Sede, a: AdministradorSede): void
+  + desactivarUsuario(u: Usuario): void
+}
+
+class Invitado {
+  - tokenReclamo: String
+  - reclamado: boolean
+  + reclamarPerfil(j: Jugador): void
+  + getNombreVisible(): String
+}
+
+class EstadisticaJugador {
+  - partidosJugados: int
+  - goles: int
+  - asistencias: int
+  - victorias: int
+  - empates: int
+  - derrotas: int
+  + getGolesPorPartido(): double
+  + getPorcentajeVictorias(): double
+  + getParticipacionesEnGol(): int
+}
+
+Persona <|-- Usuario
+Persona <|-- Invitado
+Usuario <|-- Jugador
+Usuario <|-- AdministradorSede
+Usuario <|-- Administrador
+IAutenticable <|.. Usuario
+Jugador "1" -- "1" EstadisticaJugador : tiene >
+Invitado ..> Jugador : reclama perfil
+@enduml

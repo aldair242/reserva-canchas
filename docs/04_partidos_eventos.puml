@@ -1,0 +1,103 @@
+@startuml
+title Partidos y eventos - Jerarquía de eventos
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam nodesep 60
+skinparam ranksep 80
+skinparam classFontSize 14
+skinparam ArrowFontSize 12
+hide empty members
+
+class Partido {
+  - id: Long
+  - estado: EstadoPartido
+  - nombreEquipoA: String
+  - nombreEquipoB: String
+  - golesEquipoA: int
+  - golesEquipoB: int
+  - inicioReal: LocalDateTime
+  - finReal: LocalDateTime
+  - tokenInvitacion: String
+  + iniciar(): void
+  + finalizar(): void
+  + agregarParticipante(p: ParticipantePartido): void
+  + registrarEvento(e: EventoPartido): void
+  + recalcularMarcador(): void
+  + obtenerGanador(): LadoEquipo
+  + generarEnlaceInvitacion(): String
+}
+
+class ParticipantePartido {
+  - id: Long
+  - equipo: LadoEquipo
+  - asistio: boolean
+  + getNombreVisible(): String
+  + esInvitado(): boolean
+}
+
+interface IDescartable {
+  + descartar(): void
+  + estaDescartado(): boolean
+}
+
+abstract class EventoPartido {
+  # id: Long
+  # equipo: LadoEquipo
+  # instante: LocalDateTime
+  # minuto: int
+  # origen: OrigenEvento
+  # estado: EstadoEvento
+  {abstract} + descripcion(): String
+  {abstract} + afectaMarcador(): boolean
+  + confirmar(confirmador: Jugador): void
+  + descartar(): void
+  + calcularMinuto(inicioReal: LocalDateTime): int
+}
+
+class Gol {
+  - fechaLimiteAtribucion: LocalDateTime
+  + atribuir(anotador: ParticipantePartido, asistente: ParticipantePartido): void
+  + estaVencido(): boolean
+  + descripcion(): String
+  + afectaMarcador(): boolean
+}
+
+class GolEnContra {
+  + descripcion(): String
+  + afectaMarcador(): boolean
+}
+
+abstract class Tarjeta {
+  # motivo: String
+  + afectaMarcador(): boolean
+}
+
+class TarjetaAmarilla {
+  + descripcion(): String
+}
+
+class TarjetaRoja {
+  + descripcion(): String
+  + generaExpulsion(): boolean
+}
+
+class Reserva <<ver Reservas>>
+class Persona <<ver Personas>>
+class Clip <<ver Multimedia>>
+
+Reserva "1" -- "0..1" Partido : genera >
+Partido "1" *-- "2..*" ParticipantePartido : participan >
+ParticipantePartido "0..*" --> "1" Persona : es
+Partido "1" *-- "0..*" EventoPartido : registra >
+IDescartable <|.. EventoPartido
+EventoPartido <|-- Gol
+EventoPartido <|-- GolEnContra
+EventoPartido <|-- Tarjeta
+Tarjeta <|-- TarjetaAmarilla
+Tarjeta <|-- TarjetaRoja
+Gol "0..*" --> "0..1" ParticipantePartido : anotador
+Gol "0..*" --> "0..1" ParticipantePartido : asistente
+GolEnContra "0..*" --> "1" ParticipantePartido : autor
+Tarjeta "0..*" --> "1" ParticipantePartido : jugador
+Gol "1" -- "0..1" Clip : genera >
+@enduml
