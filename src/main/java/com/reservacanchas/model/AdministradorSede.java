@@ -1,8 +1,9 @@
 package com.reservacanchas.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,13 +17,15 @@ import java.util.List;
 @Setter
 public class AdministradorSede extends Usuario {
 
-    @Transient
+    @OneToMany(mappedBy = "administradorSede", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Sede> sedes = new ArrayList<>();
 
     public void registrarCancha(Sede s, Cancha c) {
+        s.agregarCancha(c);
     }
 
     public void bloquearCancha(Cancha c, BloqueoCancha b) {
+        c.bloquear(b);
     }
 
     public List<Reserva> consultarReservas(Sede s, LocalDate f) {

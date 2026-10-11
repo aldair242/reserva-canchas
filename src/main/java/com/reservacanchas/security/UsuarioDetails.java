@@ -23,6 +23,16 @@ public class UsuarioDetails implements UserDetails {
         return usuario;
     }
 
+    public String getRol() {
+        String role = "JUGADOR";
+        if (usuario instanceof Administrador) {
+            role = "ADMIN";
+        } else if (usuario instanceof AdministradorSede) {
+            role = "ADMIN_SEDE";
+        }
+        return role;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         String role = "ROLE_JUGADOR";

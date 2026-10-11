@@ -57,7 +57,8 @@ class AuthIntegrationTest {
                         .content(objectMapper.writeValueAsString(registro)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.token").isNotEmpty())
-                .andExpect(jsonPath("$.jugador.correo").value(correo))
+                .andExpect(jsonPath("$.usuario.correo").value(correo))
+                .andExpect(jsonPath("$.usuario.rol").value("JUGADOR"))
                 .andReturn();
 
         String tokenRegistro = extractToken(registroResult);
@@ -74,6 +75,7 @@ class AuthIntegrationTest {
                         .content(objectMapper.writeValueAsString(login)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").isNotEmpty())
+                .andExpect(jsonPath("$.usuario.rol").value("JUGADOR"))
                 .andReturn();
 
         String tokenLogin = extractToken(loginResult);
@@ -82,6 +84,31 @@ class AuthIntegrationTest {
                         .header("Authorization", "Bearer " + tokenLogin))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.correo").value(correo));
+    }
+
+    @Test
+    void login_administradorSede_devuelve_rol_admin_sede() throws Exception {
+        LoginRequest login = new LoginRequest("admin@prueba.com", "admin123");
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(login)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").isNotEmpty())
+                .andExpect(jsonPath("$.usuario.correo").value("admin@prueba.com"))
+                .andExpect(jsonPath("$.usuario.rol").value("ADMIN_SEDE"))
+                .andExpect(jsonPath("$.usuario.apodo").doesNotExist());
+    }
+
+    @Test
+    void login_credencialesInvalidas_retorna_401() throws Exception {
+        LoginRequest login = new LoginRequest("inexistente@prueba.com", "malpassword");
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(login)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Credenciales inválidas"));
     }
 
     @Test
