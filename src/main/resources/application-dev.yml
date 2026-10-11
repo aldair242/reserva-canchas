@@ -11,6 +11,10 @@ spring:
   flyway:
     clean-disabled: true
 
+jwt:
+  secret: ${JWT_SECRET:dev-secret-key-minimum-256-bits-for-hs256-algorithm-0123456789}
+  expiration: ${JWT_EXPIRATION:86400000}
+
 logging:
   level:
     com.reservacanchas: DEBUG
