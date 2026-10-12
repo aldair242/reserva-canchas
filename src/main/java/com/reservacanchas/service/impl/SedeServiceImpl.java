@@ -1,13 +1,16 @@
 package com.reservacanchas.service.impl;
 
+import com.reservacanchas.dto.reserva.ReservaResponse;
 import com.reservacanchas.dto.sede.SedeRequest;
 import com.reservacanchas.dto.sede.SedeResponse;
 import com.reservacanchas.exception.ResourceNotFoundException;
+import com.reservacanchas.mapper.ReservaMapper;
 import com.reservacanchas.mapper.SedeMapper;
 import com.reservacanchas.model.AdministradorSede;
 import com.reservacanchas.model.Sede;
 import com.reservacanchas.model.Usuario;
 import com.reservacanchas.repository.AdministradorSedeRepository;
+import com.reservacanchas.repository.ReservaRepository;
 import com.reservacanchas.repository.SedeRepository;
 import com.reservacanchas.service.SecurityService;
 import com.reservacanchas.service.SedeService;
@@ -15,6 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -24,15 +28,21 @@ public class SedeServiceImpl implements SedeService {
     private final AdministradorSedeRepository administradorSedeRepository;
     private final SedeMapper sedeMapper;
     private final SecurityService securityService;
+    private final ReservaRepository reservaRepository;
+    private final ReservaMapper reservaMapper;
 
     public SedeServiceImpl(SedeRepository sedeRepository,
                            AdministradorSedeRepository administradorSedeRepository,
                            SedeMapper sedeMapper,
-                           SecurityService securityService) {
+                           SecurityService securityService,
+                           ReservaRepository reservaRepository,
+                           ReservaMapper reservaMapper) {
         this.sedeRepository = sedeRepository;
         this.administradorSedeRepository = administradorSedeRepository;
         this.sedeMapper = sedeMapper;
         this.securityService = securityService;
+        this.reservaRepository = reservaRepository;
+        this.reservaMapper = reservaMapper;
     }
 
     @Override
@@ -119,6 +129,17 @@ public class SedeServiceImpl implements SedeService {
         }
         return sedeRepository.findByAdministradorSedeId(adminSede.getId()).stream()
                 .map(sedeMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReservaResponse> listarReservasPorSede(Long id, LocalDate fecha, Authentication authentication) {
+        Sede sede = sedeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Sede", id));
+        securityService.verificarGestionSede(sede, authentication);
+        return reservaRepository.buscarPorSedeYFecha(id, fecha).stream()
+                .map(reservaMapper::toResponse)
                 .toList();
     }
 }

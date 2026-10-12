@@ -14,5 +14,6 @@ public interface ReservaMapper {
     @Mapping(target = "canchaId", source = "cancha.id")
     @Mapping(target = "canchaNombre", source = "cancha.nombre")
     @Mapping(target = "pagada", expression = "java(reserva.estaPagada())")
+    @Mapping(target = "partidoId", source = "partido.id")
     ReservaResponse toResponse(Reserva reserva);
 }

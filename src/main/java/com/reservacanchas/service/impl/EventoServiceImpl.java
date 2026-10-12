@@ -87,6 +87,17 @@ public class EventoServiceImpl implements EventoService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<EventoResponse> listarPorPartido(Long partidoId) {
+        if (!partidoRepository.existsById(partidoId)) {
+            throw new ResourceNotFoundException("Partido", partidoId);
+        }
+        return eventoRepository.findByPartidoId(partidoId).stream()
+                .map(eventoMapper::toResponse)
+                .toList();
+    }
+
+    @Override
     @Transactional
     public EventoResponse atribuir(Long eventoId, AtribuirRequest request,
                                    Authentication authentication) {

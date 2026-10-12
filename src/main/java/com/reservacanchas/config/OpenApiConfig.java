@@ -11,6 +11,15 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfig {
 
+    static {
+        io.swagger.v3.oas.models.media.Schema<String> localTimeSchema = new io.swagger.v3.oas.models.media.Schema<>();
+        localTimeSchema.setType("string");
+        localTimeSchema.setFormat("time");
+        localTimeSchema.setExample("18:00:00");
+        localTimeSchema.setPattern("^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$");
+        org.springdoc.core.utils.SpringDocUtils.getConfig().replaceWithSchema(java.time.LocalTime.class, localTimeSchema);
+    }
+
     private static final String BEARER_AUTH = "bearerAuth";
 
     @Bean

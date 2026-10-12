@@ -118,6 +118,16 @@ public class PartidoServiceImpl implements PartidoService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<PartidoResponse> listarMisPartidos(Authentication authentication) {
+        Usuario usuario = securityService.getUsuarioActual(authentication);
+        List<Partido> partidos = partidoRepository.findMisPartidos(usuario.getId());
+        return partidos.stream()
+                .map(partidoMapper::toResponse)
+                .toList();
+    }
+
+    @Override
     @Transactional
     public PartidoResponse agregarParticipante(Long partidoId, ParticipanteRequest request,
                                                Authentication authentication) {

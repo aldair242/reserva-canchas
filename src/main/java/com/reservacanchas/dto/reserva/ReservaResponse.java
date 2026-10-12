@@ -46,6 +46,9 @@ public record ReservaResponse(
         String canchaNombre,
 
         @Schema(description = "Indica si la reserva ya cuenta con pago exitoso registrado", example = "false")
-        boolean pagada
+        boolean pagada,
+
+        @Schema(description = "Id del partido asociado si ya fue creado, o null", example = "5")
+        Long partidoId
 ) {
 }

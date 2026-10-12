@@ -20,4 +20,11 @@ public interface PartidoRepository extends JpaRepository<Partido, Long> {
 
     @Query("SELECT p FROM Partido p WHERE p.reserva.cancha.id = :canchaId AND p.estado = :estado")
     Optional<Partido> findByCanchaIdAndEstado(@Param("canchaId") Long canchaId, @Param("estado") com.reservacanchas.model.enums.EstadoPartido estado);
+
+    @Query("SELECT DISTINCT p FROM Partido p " +
+           "LEFT JOIN p.reserva r " +
+           "LEFT JOIN p.participantes part " +
+           "WHERE r.organizador.id = :jugadorId OR part.persona.id = :jugadorId " +
+           "ORDER BY p.id DESC")
+    java.util.List<Partido> findMisPartidos(@Param("jugadorId") Long jugadorId);
 }

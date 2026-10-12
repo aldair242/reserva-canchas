@@ -1,9 +1,11 @@
 package com.reservacanchas.service;
 
+import com.reservacanchas.dto.reserva.ReservaResponse;
 import com.reservacanchas.dto.sede.SedeRequest;
 import com.reservacanchas.dto.sede.SedeResponse;
 import org.springframework.security.core.Authentication;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface SedeService {
@@ -19,4 +21,6 @@ public interface SedeService {
     void eliminar(Long id, Authentication authentication);
 
     List<SedeResponse> listarMisSedes(Authentication authentication);
+
+    List<ReservaResponse> listarReservasPorSede(Long id, LocalDate fecha, Authentication authentication);
 }

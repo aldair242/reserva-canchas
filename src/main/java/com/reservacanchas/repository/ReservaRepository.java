@@ -39,4 +39,11 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
             @Param("fin") LocalTime fin,
             @Param("estados") List<EstadoReserva> estados,
             @Param("reservaId") Long reservaId);
+
+    @Query("SELECT r FROM Reserva r WHERE r.cancha.sede.id = :sedeId " +
+           "AND (:fecha IS NULL OR r.fecha = :fecha) " +
+           "ORDER BY r.fecha DESC, r.horaInicio ASC")
+    List<Reserva> buscarPorSedeYFecha(
+            @Param("sedeId") Long sedeId,
+            @Param("fecha") LocalDate fecha);
 }

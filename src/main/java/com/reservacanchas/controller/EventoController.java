@@ -12,12 +12,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping
@@ -45,6 +48,17 @@ public class EventoController {
             @Valid @RequestBody EventoRequest request,
             Authentication authentication) {
         return ResponseEntity.ok(eventoService.registrarEvento(partidoId, request, authentication));
+    }
+
+    @GetMapping("/api/partidos/{partidoId}/eventos")
+    @Operation(summary = "Listar eventos de un partido", description = "Retorna todos los eventos registrados en el partido.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de eventos obtenida exitosamente"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "404", description = "Partido no encontrado")
+    })
+    public ResponseEntity<List<EventoResponse>> listarPorPartido(@PathVariable Long partidoId) {
+        return ResponseEntity.ok(eventoService.listarPorPartido(partidoId));
     }
 
     @PutMapping("/api/eventos/{id}/atribuir")

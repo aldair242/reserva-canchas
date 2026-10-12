@@ -1,14 +1,17 @@
 package com.reservacanchas.controller;
 
+import com.reservacanchas.dto.reserva.ReservaResponse;
 import com.reservacanchas.dto.sede.SedeRequest;
 import com.reservacanchas.dto.sede.SedeResponse;
 import com.reservacanchas.service.SedeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -19,8 +22,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -78,6 +83,23 @@ public class SedeController {
     })
     public ResponseEntity<List<SedeResponse>> listarMisSedes(Authentication authentication) {
         return ResponseEntity.ok(sedeService.listarMisSedes(authentication));
+    }
+
+    @GetMapping("/{id}/reservas")
+    @Operation(summary = "Listar reservas de una sede por fecha", description = "Retorna las reservas de todas las canchas de la sede en la fecha indicada. Solo para su Administrador de Sede o ADMIN.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de reservas de la sede"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "No autorizado"),
+            @ApiResponse(responseCode = "404", description = "Sede no encontrada")
+    })
+    public ResponseEntity<List<ReservaResponse>> listarReservasPorSede(
+            @PathVariable Long id,
+            @Parameter(description = "Fecha de consulta (YYYY-MM-DD)", required = false)
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
+            Authentication authentication) {
+        return ResponseEntity.ok(sedeService.listarReservasPorSede(id, fecha, authentication));
     }
 
     @PutMapping("/{id}")
