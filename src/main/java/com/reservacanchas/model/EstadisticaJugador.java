@@ -38,14 +38,15 @@ public class EstadisticaJugador {
     private int derrotas;
 
     public double getGolesPorPartido() {
-        return 0;
+        return partidosJugados > 0 ? (double) goles / partidosJugados : 0.0;
     }
 
     public double getPorcentajeVictorias() {
-        return 0;
+        int total = victorias + empates + derrotas;
+        return total > 0 ? (double) victorias / total * 100.0 : 0.0;
     }
 
     public int getParticipacionesEnGol() {
-        return 0;
+        return goles + asistencias;
     }
 }

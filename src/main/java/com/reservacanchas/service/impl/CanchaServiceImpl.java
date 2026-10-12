@@ -14,9 +14,12 @@ import com.reservacanchas.model.CanchaBasquet;
 import com.reservacanchas.model.CanchaFutbol;
 import com.reservacanchas.model.CanchaPadel;
 import com.reservacanchas.model.CanchaVoley;
+import com.reservacanchas.model.Reserva;
 import com.reservacanchas.model.Sede;
+import com.reservacanchas.model.enums.EstadoReserva;
 import com.reservacanchas.model.enums.TipoDeporte;
 import com.reservacanchas.repository.CanchaRepository;
+import com.reservacanchas.repository.ReservaRepository;
 import com.reservacanchas.repository.SedeRepository;
 import com.reservacanchas.service.CanchaService;
 import com.reservacanchas.service.SecurityService;
@@ -36,15 +39,18 @@ public class CanchaServiceImpl implements CanchaService {
 
     private final CanchaRepository canchaRepository;
     private final SedeRepository sedeRepository;
+    private final ReservaRepository reservaRepository;
     private final CanchaMapper canchaMapper;
     private final SecurityService securityService;
 
     public CanchaServiceImpl(CanchaRepository canchaRepository,
                              SedeRepository sedeRepository,
+                             ReservaRepository reservaRepository,
                              CanchaMapper canchaMapper,
                              SecurityService securityService) {
         this.canchaRepository = canchaRepository;
         this.sedeRepository = sedeRepository;
+        this.reservaRepository = reservaRepository;
         this.canchaMapper = canchaMapper;
         this.securityService = securityService;
     }
@@ -138,6 +144,14 @@ public class CanchaServiceImpl implements CanchaService {
             LocalDateTime bloqueoFin = b.getFin().isAfter(finDia) ? finDia : b.getFin();
             bloqueosInfo.add(new BloqueoInfo(b.getInicio(), b.getFin(), b.getMotivo()));
             rangosBloqueados.add(new LocalTime[]{bloqueoInicio.toLocalTime(), bloqueoFin.toLocalTime()});
+        }
+
+        // Excluir tambien las franjas ocupadas por reservas activas (PENDIENTE o CONFIRMADA)
+        List<EstadoReserva> estadosActivos = List.of(EstadoReserva.PENDIENTE, EstadoReserva.CONFIRMADA);
+        List<Reserva> reservasActivas = reservaRepository.buscarSolapadas(
+                canchaId, fecha, apertura, cierre, estadosActivos);
+        for (Reserva r : reservasActivas) {
+            rangosBloqueados.add(new LocalTime[]{r.getHoraInicio(), r.getHoraFin()});
         }
 
         List<TurnoDisponible> turnos = calcularTurnosDisponibles(apertura, cierre, rangosBloqueados);

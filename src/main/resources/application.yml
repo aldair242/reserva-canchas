@@ -24,6 +24,20 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION:86400000}
 
+clips:
+  ffmpeg:
+    simulado: ${CLIPS_FFMPEG_SIMULADO:true}
+    ruta: ${CLIPS_FFMPEG_RUTA:ffmpeg}
+  segundos-antes: ${CLIPS_SEGUNDOS_ANTES:15}
+  segundos-despues: ${CLIPS_SEGUNDOS_DESPUES:8}
+
+almacenamiento:
+  tipo: ${ALMACENAMIENTO_TIPO:local}
+  local:
+    directorio: ${ALMACENAMIENTO_LOCAL_DIR:target/almacenamiento/clips}
+  s3:
+    bucket: ${ALMACENAMIENTO_S3_BUCKET:reservacanchas-clips}
+
 springdoc:
   api-docs:
     path: /v3/api-docs

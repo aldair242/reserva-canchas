@@ -15,6 +15,14 @@ jwt:
   secret: ${JWT_SECRET:test-secret-key-minimum-256-bits-for-hs256-algorithm-0123456789}
   expiration: ${JWT_EXPIRATION:86400000}
 
+clips:
+  ffmpeg:
+    simulado: true
+almacenamiento:
+  tipo: local
+  local:
+    directorio: target/almacenamiento_test/clips
+
 logging:
   level:
     com.reservacanchas: WARN

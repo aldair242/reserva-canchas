@@ -68,6 +68,9 @@ public abstract class Cancha {
     @OneToMany(mappedBy = "cancha", cascade = CascadeType.ALL, orphanRemoval = true)
     protected List<BloqueoCancha> bloqueos = new ArrayList<>();
 
+    @OneToMany(mappedBy = "cancha", cascade = CascadeType.ALL, orphanRemoval = true)
+    protected List<Dispositivo> dispositivos = new ArrayList<>();
+
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_tarifa", length = 20)
     private TipoTarifa tipoTarifa;
@@ -138,5 +141,18 @@ public abstract class Cancha {
     public void bloquear(BloqueoCancha b) {
         bloqueos.add(b);
         b.setCancha(this);
+    }
+
+    public void agregarDispositivo(Dispositivo d) {
+        dispositivos.add(d);
+        d.setCancha(this);
+    }
+
+    public CamaraCancha getCamara() {
+        return dispositivos.stream()
+                .filter(d -> d instanceof CamaraCancha && d.isActivo())
+                .map(d -> (CamaraCancha) d)
+                .findFirst()
+                .orElse(null);
     }
 }

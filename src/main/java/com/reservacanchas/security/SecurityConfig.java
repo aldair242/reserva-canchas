@@ -41,6 +41,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/**",
+                                "/api/sensores/**",
+                                "/api/clips/archivos/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
@@ -51,14 +53,19 @@ public class SecurityConfig {
                                 "/api/sedes/{id}",
                                 "/api/canchas",
                                 "/api/canchas/{id}",
-                                "/api/canchas/{id}/disponibilidad"
+                                "/api/canchas/{id}/disponibilidad",
+                                "/api/invitaciones/{token}"
                         ).permitAll()
                         .requestMatchers(
                                 "/api/sedes/mis"
                         ).authenticated()
                         .requestMatchers(
+                                "/api/reservas/**"
+                        ).hasRole("JUGADOR")
+                        .requestMatchers(
                                 "/api/sedes/**",
-                                "/api/canchas/**"
+                                "/api/canchas/**",
+                                "/api/dispositivos/**"
                         ).hasAnyRole("ADMIN", "ADMIN_SEDE")
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())

@@ -1,12 +1,15 @@
 package com.reservacanchas.repository;
 
 import com.reservacanchas.model.Cancha;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CanchaRepository extends JpaRepository<Cancha, Long> {
@@ -18,4 +21,8 @@ public interface CanchaRepository extends JpaRepository<Cancha, Long> {
            "(:tipo IS NULL OR TYPE(c) = :tipo)")
     List<Cancha> buscarConFiltros(@Param("sedeId") Long sedeId,
                                   @Param("tipo") Class<? extends Cancha> tipo);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT c FROM Cancha c WHERE c.id = :id")
+    Optional<Cancha> findByIdForUpdate(@Param("id") Long id);
 }

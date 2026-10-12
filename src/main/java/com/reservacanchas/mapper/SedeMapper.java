@@ -5,8 +5,9 @@ import com.reservacanchas.dto.sede.SedeResponse;
 import com.reservacanchas.model.Sede;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface SedeMapper {
 
     @Mapping(target = "id", ignore = true)
