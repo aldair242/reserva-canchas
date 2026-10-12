@@ -4,6 +4,8 @@ import com.reservacanchas.dto.sede.SedeRequest;
 import com.reservacanchas.dto.sede.SedeResponse;
 import com.reservacanchas.service.SedeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -23,7 +25,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/sedes")
-@Tag(name = "Sedes", description = "Endpoints de sedes deportivas")
+@Tag(name = "Sedes", description = "Endpoints de administracion y consulta de sedes deportivas")
 @SecurityRequirement(name = "bearerAuth")
 public class SedeController {
 
@@ -34,7 +36,14 @@ public class SedeController {
     }
 
     @PostMapping
-    @Operation(summary = "Crear una nueva sede")
+    @Operation(summary = "Crear una nueva sede", description = "Registra una sede deportiva asignando su administrador y horarios. Requiere rol ADMIN.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Sede creada exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos de sede invalidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Solo el rol ADMIN puede crear sedes"),
+            @ApiResponse(responseCode = "404", description = "Administrador de sede especificado no existe")
+    })
     public ResponseEntity<SedeResponse> crear(@Valid @RequestBody SedeRequest request,
                                                Authentication authentication) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -42,25 +51,44 @@ public class SedeController {
     }
 
     @GetMapping
-    @Operation(summary = "Listar todas las sedes")
+    @Operation(summary = "Listar todas las sedes", description = "Consulta publica de todas las sedes deportivas registradas.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de sedes obtenida exitosamente")
+    })
     public ResponseEntity<List<SedeResponse>> listarTodas() {
         return ResponseEntity.ok(sedeService.listarTodas());
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Obtener una sede por id")
+    @Operation(summary = "Obtener una sede por id", description = "Consulta publica del detalle de una sede especifica.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Sede encontrada"),
+            @ApiResponse(responseCode = "404", description = "Sede no encontrada")
+    })
     public ResponseEntity<SedeResponse> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(sedeService.obtenerPorId(id));
     }
 
     @GetMapping("/mis")
-    @Operation(summary = "Listar las sedes del administrador de sede autenticado")
+    @Operation(summary = "Listar las sedes del administrador autenticado", description = "Retorna las sedes bajo la administracion del usuario actual.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de sedes del administrador obtenida"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Solo administradores de sede")
+    })
     public ResponseEntity<List<SedeResponse>> listarMisSedes(Authentication authentication) {
         return ResponseEntity.ok(sedeService.listarMisSedes(authentication));
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Actualizar una sede")
+    @Operation(summary = "Actualizar una sede", description = "Modifica direccion, horarios o estado de una sede existente.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Sede actualizada exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos de actualizacion invalidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "No autorizado para administrar esta sede"),
+            @ApiResponse(responseCode = "404", description = "Sede no encontrada")
+    })
     public ResponseEntity<SedeResponse> actualizar(@PathVariable Long id,
                                                     @Valid @RequestBody SedeRequest request,
                                                     Authentication authentication) {
@@ -68,7 +96,13 @@ public class SedeController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Eliminar una sede")
+    @Operation(summary = "Eliminar una sede", description = "Elimina una sede deportiva del sistema.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Sede eliminada exitosamente"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "No autorizado"),
+            @ApiResponse(responseCode = "404", description = "Sede no encontrada")
+    })
     public ResponseEntity<Void> eliminar(@PathVariable Long id, Authentication authentication) {
         sedeService.eliminar(id, authentication);
         return ResponseEntity.noContent().build();
