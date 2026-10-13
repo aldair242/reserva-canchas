@@ -9,6 +9,10 @@ public interface AdminUsuarioService {
 
     AdministradorSedeResponse crearAdministradorSede(CrearAdminSedeRequest request);
 
+    AdministradorSedeResponse actualizarAdministradorSede(Long id, com.reservacanchas.dto.admin.ActualizarAdminSedeRequest request);
+
+    void eliminarAdministradorSede(Long id);
+
     List<AdministradorSedeResponse> listarAdministradoresSede();
 }
 

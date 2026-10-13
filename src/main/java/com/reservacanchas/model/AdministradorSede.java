@@ -17,7 +17,7 @@ import java.util.List;
 @Setter
 public class AdministradorSede extends Usuario {
 
-    @OneToMany(mappedBy = "administradorSede", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "administradorSede")
     private List<Sede> sedes = new ArrayList<>();
 
     public void registrarCancha(Sede s, Cancha c) {

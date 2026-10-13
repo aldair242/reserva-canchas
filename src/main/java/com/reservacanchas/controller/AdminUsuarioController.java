@@ -54,5 +54,36 @@ public class AdminUsuarioController {
         AdministradorSedeResponse response = adminUsuarioService.crearAdministradorSede(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    @PutMapping("/administradores-sede/{id}")
+    @Operation(summary = "Modificar Administrador de Sede", description = "Permite al Administrador General actualizar datos o credenciales de un Administrador de Sede.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Administrador de Sede actualizado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos o correo duplicado"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Acceso restringido al Administrador General"),
+            @ApiResponse(responseCode = "404", description = "Administrador no encontrado")
+    })
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AdministradorSedeResponse> actualizarAdministradorSede(
+            @PathVariable Long id,
+            @Valid @RequestBody com.reservacanchas.dto.admin.ActualizarAdminSedeRequest request) {
+        AdministradorSedeResponse response = adminUsuarioService.actualizarAdministradorSede(id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/administradores-sede/{id}")
+    @Operation(summary = "Eliminar Administrador de Sede", description = "Permite al Administrador General dar de baja un Administrador de Sede desvinculando sus sedes.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Administrador de Sede eliminado exitosamente"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Acceso restringido al Administrador General"),
+            @ApiResponse(responseCode = "404", description = "Administrador no encontrado")
+    })
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> eliminarAdministradorSede(@PathVariable Long id) {
+        adminUsuarioService.eliminarAdministradorSede(id);
+        return ResponseEntity.noContent().build();
+    }
 }
 

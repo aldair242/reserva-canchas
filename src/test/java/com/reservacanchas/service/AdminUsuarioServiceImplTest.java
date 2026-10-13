@@ -29,6 +29,9 @@ class AdminUsuarioServiceImplTest {
     private UsuarioRepository usuarioRepository;
 
     @Mock
+    private com.reservacanchas.repository.SedeRepository sedeRepository;
+
+    @Mock
     private PasswordEncoder passwordEncoder;
 
     private AdminUsuarioServiceImpl service;
@@ -38,6 +41,7 @@ class AdminUsuarioServiceImplTest {
         service = new AdminUsuarioServiceImpl(
                 administradorSedeRepository,
                 usuarioRepository,
+                sedeRepository,
                 passwordEncoder
         );
     }
@@ -98,6 +102,52 @@ class AdminUsuarioServiceImplTest {
 
         assertEquals(1, resultado.size());
         assertEquals("Ana", resultado.get(0).nombre());
+    }
+
+    @Test
+    void actualizarAdministradorSede_exitoso() {
+        Long id = 5L;
+        AdministradorSede existente = new AdministradorSede();
+        existente.setId(id);
+        existente.setNombre("Carlos");
+        existente.setApellido("Gómez");
+        existente.setCorreo("carlos@sede.com");
+        existente.setTelefono("987654321");
+        existente.setActivo(true);
+
+        when(administradorSedeRepository.findById(id)).thenReturn(java.util.Optional.of(existente));
+        when(administradorSedeRepository.save(any(AdministradorSede.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        com.reservacanchas.dto.admin.ActualizarAdminSedeRequest request =
+                new com.reservacanchas.dto.admin.ActualizarAdminSedeRequest(
+                        "Carlos Alberto", "Gómez", "carlos@sede.com", null, "999888777", true
+                );
+
+        AdministradorSedeResponse res = service.actualizarAdministradorSede(id, request);
+
+        assertEquals("Carlos Alberto", res.nombre());
+        assertEquals("999888777", res.telefono());
+        verify(administradorSedeRepository).save(existente);
+    }
+
+    @Test
+    void eliminarAdministradorSede_desvinculaSedesYBorra() {
+        Long id = 7L;
+        AdministradorSede existente = new AdministradorSede();
+        existente.setId(id);
+
+        com.reservacanchas.model.Sede sedeAsociada = new com.reservacanchas.model.Sede();
+        sedeAsociada.setId(10L);
+        sedeAsociada.setAdministradorSede(existente);
+
+        when(administradorSedeRepository.findById(id)).thenReturn(java.util.Optional.of(existente));
+        when(sedeRepository.findByAdministradorSedeId(id)).thenReturn(List.of(sedeAsociada));
+
+        service.eliminarAdministradorSede(id);
+
+        assertNull(sedeAsociada.getAdministradorSede());
+        verify(sedeRepository).save(sedeAsociada);
+        verify(administradorSedeRepository).delete(existente);
     }
 }
 
