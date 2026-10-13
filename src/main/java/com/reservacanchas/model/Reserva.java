@@ -81,6 +81,14 @@ public class Reserva {
         this.estado = EstadoReserva.CONFIRMADA;
     }
 
+    public void completar() {
+        this.estado = EstadoReserva.COMPLETADA;
+    }
+
+    public void marcarNoShow() {
+        this.estado = EstadoReserva.NO_SHOW;
+    }
+
     public void cancelar(String motivo) {
         this.estado = EstadoReserva.CANCELADA;
         this.motivoCancelacion = motivo;
@@ -107,6 +115,15 @@ public class Reserva {
         }
         LocalDateTime inicio = LocalDateTime.of(fecha, horaInicio);
         return LocalDateTime.now().isBefore(inicio.minusHours(2));
+    }
+
+    public boolean puedeReprogramarse() {
+        if (estado == EstadoReserva.CANCELADA || estado == EstadoReserva.COMPLETADA
+                || estado == EstadoReserva.NO_SHOW) {
+            return false;
+        }
+        LocalDateTime inicio = LocalDateTime.of(fecha, horaInicio);
+        return LocalDateTime.now().isBefore(inicio);
     }
 
     public boolean estaPagada() {

@@ -68,6 +68,6 @@ public class Sede {
         if (horaApertura == null || horaCierre == null) {
             return false;
         }
-        return !hora.isBefore(horaApertura) && hora.isBefore(horaCierre);
+        return !hora.isBefore(horaApertura) && !hora.isAfter(horaCierre);
     }
 }

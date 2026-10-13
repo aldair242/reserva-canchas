@@ -131,7 +131,21 @@ public class PartidoServiceImpl implements PartidoService {
     @Transactional
     public PartidoResponse agregarParticipante(Long partidoId, ParticipanteRequest request,
                                                Authentication authentication) {
-        Partido partido = obtenerPartidoPropio(partidoId, authentication);
+        Usuario usuario = securityService.getUsuarioActual(authentication);
+        if (!(usuario instanceof Jugador jugadorActual)) {
+            throw new OperacionNoPermitidaException("Solo los jugadores pueden participar o gestionar partidos");
+        }
+
+        Partido partido = partidoRepository.findById(partidoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Partido", partidoId));
+
+        boolean esOrganizador = partido.getReserva().getOrganizador().getId().equals(jugadorActual.getId());
+        boolean esElMismoJugador = request.jugadorId() != null && request.jugadorId().equals(jugadorActual.getId());
+
+        if (!esOrganizador && !esElMismoJugador) {
+            throw new OperacionNoPermitidaException(
+                    "No tiene permisos para gestionar este partido");
+        }
 
         Persona persona;
         if (request.jugadorId() != null) {
@@ -148,6 +162,13 @@ public class PartidoServiceImpl implements PartidoService {
         } else {
             throw new IllegalArgumentException(
                     "Debe indicar un jugadorId o un nombre y apellido de invitado");
+        }
+
+        // Validar que la persona no esté ya inscrita en el partido
+        boolean yaInscrito = partido.getParticipantes().stream()
+                .anyMatch(p -> p.getPersona() != null && p.getPersona().getId().equals(persona.getId()));
+        if (yaInscrito) {
+            throw new OperacionNoPermitidaException("El jugador ya se encuentra registrado en este partido");
         }
 
         ParticipantePartido participante = new ParticipantePartido();
@@ -202,6 +223,11 @@ public class PartidoServiceImpl implements PartidoService {
         for (Grabacion grabacion : grabacionesActivas) {
             grabacion.finalizar();
             grabacionRepository.save(grabacion);
+        }
+
+        if (guardado.getReserva() != null && guardado.getReserva().getEstado() == EstadoReserva.CONFIRMADA) {
+            guardado.getReserva().completar();
+            reservaRepository.save(guardado.getReserva());
         }
 
         return partidoMapper.toResponse(guardado);

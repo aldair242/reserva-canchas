@@ -53,10 +53,7 @@ public class SedeServiceImpl implements SedeService {
         Usuario usuario = securityService.getUsuarioActual(authentication);
         if (usuario instanceof AdministradorSede adminSede) {
             sede.setAdministradorSede(adminSede);
-        } else {
-            if (request.administradorSedeId() == null) {
-                throw new IllegalArgumentException("Debe especificar el administrador de sede");
-            }
+        } else if (request.administradorSedeId() != null) {
             AdministradorSede adminSede = administradorSedeRepository.findById(request.administradorSedeId())
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "AdministradorSede", request.administradorSedeId()));

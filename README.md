@@ -102,10 +102,9 @@ Para ejecutar una prueba específica:
 
 ## 🔄 Flujo Completo de la API (Ejemplos cURL)
 
-> **Usuario inicial de prueba (`dev` profile)**:
-> - **Email**: `admin@prueba.com`
-> - **Contraseña**: `admin123`
-> - **Rol**: `ADMIN_SEDE`
+> **Usuarios iniciales de prueba (`dev` profile)**:
+> - **Administrador Sede**: `admin@prueba.com` / `admin123` (Rol: `ADMIN_SEDE`)
+> - **Administrador General**: `admingeneral@prueba.com` o `admin.general@prueba.com` / `admin123` (Rol: `ADMIN`)
 
 ### 1. Registro de Jugador
 

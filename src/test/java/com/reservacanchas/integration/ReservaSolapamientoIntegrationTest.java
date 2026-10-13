@@ -83,6 +83,23 @@ class ReservaSolapamientoIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private com.reservacanchas.repository.ReservaRepository reservaRepository;
+
+    @Test
+    void buscarPorSedeYFecha_funcionaConFechaYConFechaNula() {
+        com.reservacanchas.model.Cancha cancha = canchaRepository.findById(canchaId).orElseThrow();
+        Long sedeId = cancha.getSede().getId();
+
+        java.util.List<com.reservacanchas.model.Reserva> conFecha =
+                reservaRepository.buscarPorSedeYFecha(sedeId, LocalDate.now());
+        org.junit.jupiter.api.Assertions.assertNotNull(conFecha);
+
+        java.util.List<com.reservacanchas.model.Reserva> sinFecha =
+                reservaRepository.buscarPorSedeYFecha(sedeId, null);
+        org.junit.jupiter.api.Assertions.assertNotNull(sinFecha);
+    }
+
     private Long canchaId;
     private String token;
 

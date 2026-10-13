@@ -96,3 +96,4 @@ class ReservaMapperTest {
         assertNull(response.partidoId());
     }
 }
+

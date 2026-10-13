@@ -40,6 +40,9 @@ public record InvitacionResponse(
         String canchaNombre,
 
         @Schema(description = "Nombre de la sede", example = "Sede Central Palermo")
-        String sedeNombre
+        String sedeNombre,
+
+        @Schema(description = "Participantes actualmente inscritos en el partido")
+        java.util.List<ParticipanteResponse> participantes
 ) {
 }

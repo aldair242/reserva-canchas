@@ -12,11 +12,14 @@ import com.reservacanchas.mapper.ReservaMapper;
 import com.reservacanchas.model.Cancha;
 import com.reservacanchas.model.Jugador;
 import com.reservacanchas.model.Pago;
+import com.reservacanchas.model.Partido;
 import com.reservacanchas.model.Reserva;
 import com.reservacanchas.model.Sede;
 import com.reservacanchas.model.Usuario;
+import com.reservacanchas.model.enums.EstadoPartido;
 import com.reservacanchas.model.enums.EstadoReserva;
 import com.reservacanchas.repository.CanchaRepository;
+import com.reservacanchas.repository.PartidoRepository;
 import com.reservacanchas.repository.ReservaRepository;
 import com.reservacanchas.service.PagoService;
 import com.reservacanchas.service.ReservaService;
@@ -26,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -37,17 +41,20 @@ public class ReservaServiceImpl implements ReservaService {
 
     private final ReservaRepository reservaRepository;
     private final CanchaRepository canchaRepository;
+    private final PartidoRepository partidoRepository;
     private final ReservaMapper reservaMapper;
     private final SecurityService securityService;
     private final PagoService pagoService;
 
     public ReservaServiceImpl(ReservaRepository reservaRepository,
                               CanchaRepository canchaRepository,
+                              PartidoRepository partidoRepository,
                               ReservaMapper reservaMapper,
                               SecurityService securityService,
                               PagoService pagoService) {
         this.reservaRepository = reservaRepository;
         this.canchaRepository = canchaRepository;
+        this.partidoRepository = partidoRepository;
         this.reservaMapper = reservaMapper;
         this.securityService = securityService;
         this.pagoService = pagoService;
@@ -104,6 +111,13 @@ public class ReservaServiceImpl implements ReservaService {
                     "No se puede cancelar la reserva: faltan menos de 2 horas para el inicio o el estado no lo permite");
         }
 
+        Partido partido = partidoRepository.findByReservaId(reserva.getId()).orElse(null);
+        if (partido != null && (partido.getEstado() == EstadoPartido.EN_JUEGO
+                || partido.getEstado() == EstadoPartido.FINALIZADO)) {
+            throw new OperacionNoPermitidaException(
+                    "No se puede cancelar una reserva cuyo partido ya está en juego o ha finalizado");
+        }
+
         reserva.cancelar(request.motivo());
         Reserva guardada = reservaRepository.save(reserva);
         return reservaMapper.toResponse(guardada);
@@ -114,11 +128,16 @@ public class ReservaServiceImpl implements ReservaService {
     public ReservaResponse reprogramar(Long id, ReprogramarRequest request, Authentication authentication) {
         Reserva reserva = obtenerReservaPropia(id, authentication);
 
-        if (reserva.getEstado() == EstadoReserva.CANCELADA
-                || reserva.getEstado() == EstadoReserva.COMPLETADA
-                || reserva.getEstado() == EstadoReserva.NO_SHOW) {
+        if (!reserva.puedeReprogramarse()) {
             throw new OperacionNoPermitidaException(
-                    "No se puede reprogramar una reserva en estado " + reserva.getEstado());
+                    "No se puede reprogramar la reserva: el horario ya ha iniciado, pasado o el estado no lo permite");
+        }
+
+        Partido partido = partidoRepository.findByReservaId(reserva.getId()).orElse(null);
+        if (partido != null && (partido.getEstado() == EstadoPartido.EN_JUEGO
+                || partido.getEstado() == EstadoPartido.FINALIZADO)) {
+            throw new OperacionNoPermitidaException(
+                    "No se puede reprogramar una reserva cuyo partido ya está en juego o ha finalizado");
         }
 
         Cancha cancha = canchaRepository.findByIdForUpdate(reserva.getCancha().getId())
@@ -163,11 +182,15 @@ public class ReservaServiceImpl implements ReservaService {
         if (!fin.isAfter(inicio)) {
             throw new IllegalArgumentException("La hora de fin debe ser posterior a la hora de inicio");
         }
+        LocalDateTime fechaHoraInicio = LocalDateTime.of(fecha, inicio);
+        if (fechaHoraInicio.isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("No se pueden realizar reservas en fechas u horarios pasados");
+        }
         Sede sede = cancha.getSede();
         if (sede == null) {
             throw new IllegalArgumentException("La cancha no tiene sede asociada");
         }
-        if (!sede.estaAbiertaEn(inicio) || !sede.estaAbiertaEn(fin)) {
+        if (!sede.estaAbiertaEn(inicio) || !sede.estaAbiertaEn(fin) || !inicio.isBefore(sede.getHoraCierre())) {
             throw new IllegalArgumentException(
                     "El horario solicitado esta fuera del horario de atencion de la sede");
         }

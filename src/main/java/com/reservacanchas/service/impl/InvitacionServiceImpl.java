@@ -1,6 +1,7 @@
 package com.reservacanchas.service.impl;
 
 import com.reservacanchas.dto.partido.InvitacionResponse;
+import com.reservacanchas.dto.partido.ParticipanteResponse;
 import com.reservacanchas.exception.OperacionNoPermitidaException;
 import com.reservacanchas.exception.ResourceNotFoundException;
 import com.reservacanchas.model.Invitado;
@@ -15,6 +16,8 @@ import com.reservacanchas.service.SecurityService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class InvitacionServiceImpl implements InvitacionService {
@@ -40,6 +43,17 @@ public class InvitacionServiceImpl implements InvitacionService {
         Partido partido = partidoRepository.findByTokenInvitacion(token)
                 .orElseThrow(() -> new ResourceNotFoundException("Invitacion", token));
 
+        List<ParticipanteResponse> participantes = partido.getParticipantes().stream()
+                .map(p -> new ParticipanteResponse(
+                        p.getId(),
+                        p.getEquipo(),
+                        p.isAsistio(),
+                        p.getPersona() != null ? p.getPersona().getId() : null,
+                        p.getPersona() != null ? p.getPersona().getNombreCompleto() : "Invitado",
+                        p.getPersona() instanceof Invitado
+                ))
+                .toList();
+
         return new InvitacionResponse(
                 partido.getId(),
                 partido.getEstado(),
@@ -51,7 +65,8 @@ public class InvitacionServiceImpl implements InvitacionService {
                 partido.getReserva().getHoraInicio(),
                 partido.getReserva().getHoraFin(),
                 partido.getReserva().getCancha().getNombre(),
-                partido.getReserva().getCancha().getSede().getNombre()
+                partido.getReserva().getCancha().getSede().getNombre(),
+                participantes
         );
     }
 

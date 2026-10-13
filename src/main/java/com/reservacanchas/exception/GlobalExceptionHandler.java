@@ -26,6 +26,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleNoResourceFound(
+            org.springframework.web.servlet.resource.NoResourceFoundException ex, HttpServletRequest request) {
+        ApiErrorResponse body = buildBody(HttpStatus.NOT_FOUND, "Recurso no encontrado: " + ex.getResourcePath(), request, null);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
     @ExceptionHandler(CredencialesInvalidasException.class)
     public ResponseEntity<ApiErrorResponse> handleCredencialesInvalidas(
             CredencialesInvalidasException ex, HttpServletRequest request) {
@@ -130,11 +137,14 @@ public class GlobalExceptionHandler {
         return false;
     }
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleGeneric(
             Exception ex, HttpServletRequest request) {
+        log.error("Error no controlado en {}: ", request.getRequestURI(), ex);
         ApiErrorResponse body = buildBody(
-                HttpStatus.INTERNAL_SERVER_ERROR, "Error interno del servidor", request, null);
+                HttpStatus.INTERNAL_SERVER_ERROR, "Error interno del servidor: " + ex.getMessage(), request, null);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
 

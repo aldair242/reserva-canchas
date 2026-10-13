@@ -41,9 +41,23 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
             @Param("reservaId") Long reservaId);
 
     @Query("SELECT r FROM Reserva r WHERE r.cancha.sede.id = :sedeId " +
-           "AND (:fecha IS NULL OR r.fecha = :fecha) " +
+           "AND r.fecha = :fecha " +
            "ORDER BY r.fecha DESC, r.horaInicio ASC")
-    List<Reserva> buscarPorSedeYFecha(
+    List<Reserva> buscarPorSedeYFechaExacta(
             @Param("sedeId") Long sedeId,
             @Param("fecha") LocalDate fecha);
+
+    @Query("SELECT r FROM Reserva r WHERE r.cancha.sede.id = :sedeId " +
+           "ORDER BY r.fecha DESC, r.horaInicio ASC")
+    List<Reserva> buscarPorSede(
+            @Param("sedeId") Long sedeId);
+
+    default List<Reserva> buscarPorSedeYFecha(Long sedeId, LocalDate fecha) {
+        if (fecha == null) {
+            return buscarPorSede(sedeId);
+        }
+        return buscarPorSedeYFechaExacta(sedeId, fecha);
+    }
+
+    List<Reserva> findByEstadoIn(List<EstadoReserva> estados);
 }

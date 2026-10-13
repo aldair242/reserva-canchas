@@ -74,6 +74,12 @@ public class SecurityConfig {
                                 "/api/reservas/**"
                         ).hasRole("JUGADOR")
                         .requestMatchers(
+                                HttpMethod.POST, "/api/admin/usuarios/**"
+                        ).hasRole("ADMIN")
+                        .requestMatchers(
+                                "/api/admin/usuarios/**"
+                        ).hasAnyRole("ADMIN", "ADMIN_SEDE")
+                        .requestMatchers(
                                 "/api/sedes/**",
                                 "/api/canchas/**",
                                 "/api/dispositivos/**"

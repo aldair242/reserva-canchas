@@ -97,6 +97,32 @@ class SedeServiceAdjustmentTest {
     }
 
     @Test
+    void listarReservasPorSede_conFechaNula_retornaTodasLasReservas() {
+        Long sedeId = 5L;
+        Sede sede = new Sede();
+        sede.setId(sedeId);
+
+        when(sedeRepository.findById(sedeId)).thenReturn(Optional.of(sede));
+
+        Reserva reserva = new Reserva();
+        reserva.setId(200L);
+        when(reservaRepository.buscarPorSedeYFecha(sedeId, null)).thenReturn(List.of(reserva));
+
+        ReservaResponse responseMock = new ReservaResponse(
+                200L, "RES-200", LocalDate.now(), LocalTime.of(10, 0), LocalTime.of(11, 0),
+                null, null, null, 1L, "Jugador", 2L, "Cancha 1", false, null
+        );
+        when(reservaMapper.toResponse(reserva)).thenReturn(responseMock);
+
+        List<ReservaResponse> resultado = sedeService.listarReservasPorSede(sedeId, null, authentication);
+
+        verify(securityService).verificarGestionSede(sede, authentication);
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        assertEquals(200L, resultado.get(0).id());
+    }
+
+    @Test
     void crear_cuandoEsAdministradorSede_ignoraIdDelCuerpoYAsignaUsuarioAutenticado() {
         AdministradorSede adminAutenticado = new AdministradorSede();
         adminAutenticado.setId(99L);
